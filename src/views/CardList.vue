@@ -84,8 +84,9 @@
     
     <v-dialog 
         v-model="dialog"
+        :fullscreen="$vuetify.display.mobile"
     >
-        <v-card class="card_detail">
+        <v-card class="default_dialog">
             <v-btn
                 class="card_detail_close"
                 icon
@@ -167,7 +168,8 @@
                     <v-card style="box-shadow: 0px 0px 4px 2px #b0e0e6; height: 76px; flex: 1; background: #011E33; color: #B0E0E6" class="ma-4 d-flex justify-space-between pr-2 pl-2 pt-1 pb-1">
                         <div class="d-flex pr-1" style="justify-content: space-around; flex: 1;">
                             <div class="d-flex flex-column" style="font-size: 10px" v-for="(count, index) of editBarChart.countList" :key="index">
-                                <div class="d-flex justify-center">{{index}}</div>
+                                <div v-if="index != 11" class="d-flex justify-center">{{index}}</div>
+                                <div v-else class="d-flex justify-center"> E </div>
                                 <div style="border:1px solid #B0E0E6; flex: 1; background: #011E33; min-width: 14px" class="d-flex flex-column justify-end">
                                     <div style="background: #B0E0E6;" :style="{ height: `${count/40*100}%` }"></div>
                                 </div>
@@ -194,7 +196,7 @@
                 </v-row>
             </div>
             <v-row class="ma-0" style="overflow: auto;" :class="[viewType == 'dashboard' ? '' : 'view_list']">
-                <v-col v-for="(card, index) in editCardList" :key="card.id" sm="4" md="3" :cols="cols" class="pb-0">
+                <v-col v-for="(card) in editCardList" :key="card.id" sm="4" md="3" :cols="cols" class="pb-0">
                     <div style="background: #011E33; color: #B0E0E6" elevation="0" :class="testClass">
                         <v-img
                         v-if="viewType == 'dashboard'" 
@@ -265,7 +267,7 @@ export default {
                 "follower": 0,
                 "spell": 0,
                 "amulet": 0,
-                countList: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                countList: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             },
             selectedProfessions: [],
             selectedLevels: [],
@@ -298,8 +300,18 @@ export default {
             this.tatolCardCount ++;
             this.editCardList[card.code] = card;
             this.editBarChart[card.type] ++;
+
             const consumption = parseInt(card.consumption);
-            this.editBarChart.countList[consumption] ++;
+            
+            if (isNaN(consumption)) {
+                this.editBarChart.countList[11] ++;
+            }
+            else if (consumption >= 10) {
+                this.editBarChart.countList[10] ++;
+            } else {
+                this.editBarChart.countList[consumption] ++;
+            }
+            
         },
         reduceCard(card) {
             if (card.count > 0) { 
@@ -327,7 +339,7 @@ export default {
         clickProfession(profession) {
             if (profession.color) {
                 profession.color = null
-                this.selectedProfessions.splice(1, 0, profession.name)
+                this.selectedProfessions.splice(this.selectedProfessions.indexOf(profession.name), 1)
             } else {
                 this.selectedProfessions.push(profession.name)
                 profession.color = "selected"
@@ -336,7 +348,7 @@ export default {
         clickLevel(level) {
             if (level.color) {
                 level.color = null
-                this.selectedLevels.splice(1, 0, level.name)
+                this.selectedLevels.splice(this.selectedLevels.indexOf(level.name), 1)
             } else {
                 level.color = "selected"
                 this.selectedLevels.push(level.name)
@@ -346,7 +358,7 @@ export default {
             const name = consumption.name == 'E' ? 'EVOLVE' : consumption.name;
             if (consumption.color) {
                 consumption.color = null
-                this.selectedConsumptions.splice(1, 0, name)
+                this.selectedConsumptions.splice(this.selectedConsumptions.indexOf(name), 1)
             } else {
                 consumption.color = "selected"
                 this.selectedConsumptions.push(name)
