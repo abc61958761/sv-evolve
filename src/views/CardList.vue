@@ -103,7 +103,7 @@
                     ></v-img>
                 </div>
                 <div class="d-flex flex-column pt-2" style="flex:1">
-                    <div class="mb-2" style="text-align: center">名稱：{{cardDetail.name}}</div>
+                    <div class="mb-2" style="text-align: center">名稱：{{cardDetail.chinese_name}}</div>
                     <div class="mb-2" style="text-align: center">類型：{{cardDetail.profession}}</div>
                     <div class="card_detail_describe mb-4" v-html="cardDetail.describe"></div>
                     <div class="d-flex align-center" style="justify-content:space-evenly">
@@ -132,8 +132,8 @@
         <v-card class="default_dialog">
             <v-card-text style="color: #B0E0E6;">
                 <div class="mb-4">進階搜尋</div>
-                <v-text-field style="color: #B0E0E6;" class="mb-4" hide-details label="卡片編碼" variant="outlined" density="compact"></v-text-field>
-                <v-text-field class="mb-4" hide-details label="中文名稱" variant="outlined" density="compact"></v-text-field>
+                <v-text-field style="color: #B0E0E6;" class="mb-4" hide-details label="卡片編碼" variant="outlined" density="compact" v-model="cardCode"></v-text-field>
+                <v-text-field class="mb-4" hide-details label="中文名稱" variant="outlined" density="compact" v-model="cardName"></v-text-field>
                 <v-select v-model="cardVersion"
                     :items="items" 
                     item-text="title"
@@ -207,7 +207,7 @@
                             <div class="mb-2" :class="`text-${model}`" style="font-weight: 600" v-text="card.name"></div>
                             <div v-if="viewType == 'list'"  class="mb-2" :class="`text-${model}`" style="font-weight: 600" >
                                 <span v-text="card.code"></span>
-                                <span class="ml-4">test</span>
+                                <span class="ml-4">{{card.chinese_name}}</span>
                             </div>
                         </div>
                         <div class="d-flex justify-space-around align-center card_btn">
@@ -281,7 +281,9 @@ export default {
                 { title: 'SD04 - 龍族', value: "SD04" },
                 { title: 'SD05 - 夢魘', value: "SD05" },
                 { title: 'SD06 - 主教', value: "SD06" }
-            ]
+            ],
+            cardCode: null,
+            cardName: null
         }
     },
     methods: {
@@ -383,7 +385,9 @@ export default {
                 consumptions: this.selectedConsumptions.toString(),
                 levels: this.selectedLevels.toString(),
                 professions: this.selectedProfessions.toString(),
-                version: this.cardVersion
+                version: this.cardVersion,
+                code: this.cardCode,
+                chinese_name: this.cardName
             });
         },
         resetFileter() {
@@ -397,6 +401,8 @@ export default {
             this.selectedProfessions = [];
         },
         init() {
+            this.cardCode = null
+            this.cardName = null
             const professions = [
                 { color: null, name: "妖精" }, 
                 { color: null, name: "皇家" }, 
