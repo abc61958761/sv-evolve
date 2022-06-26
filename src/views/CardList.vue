@@ -7,7 +7,7 @@
         <v-icon>mdi-cards-outline</v-icon>
         <span> {{tatolCardCount}}/50</span>
     </v-btn>
-
+    <!-- <div id="test" v-html="testhtml"></div> -->
     <v-row class="mb-4 align-center">
         <v-col cols="8" class="pa-2">
             <v-select 
@@ -18,7 +18,6 @@
                 @update:modelValue="seletedCardVersion(cardVersion)"
                 class="card_version_select" 
                 hide-details 
-                label="選擇彈數" 
                 density="compact" 
                 variant="outlined"></v-select>
         </v-col>
@@ -56,13 +55,13 @@
                     ></v-btn>
                 </div>
             </v-card>
-            <v-card v-intersect="onIntersect" v-else @click="getCardDetail(card)" style="background: #011E33; color: #B0E0E6" elevation="0">
+            <v-card v-intersect="onIntersect" v-else style="background: #011E33; color: #B0E0E6" elevation="0">
                 <v-img
                 @click="getCardDetail(card)"
                 :src="require(`../assets/SV/創世的黎明/${card.code}.png`)"
                 class="mb-2 card_image"
                 ></v-img>
-                <div :class="`text-${model}`" v-text="card.name"></div>
+                <div class="mb-2" :class="`text-${model}`" v-text="card.name"></div>
                 <div class="d-flex justify-space-around align-center">
                     <v-btn
                         icon="mdi-plus"
@@ -162,7 +161,7 @@
         v-model="editCardDialog"
         :fullscreen="$vuetify.display.mobile"
     >
-        <v-card class="default_dialog" >
+        <v-card class="default_dialog" id="editCreateList">
             <div>
                 <v-row class="ma-0 flex-grow-0">
                     <v-card style="box-shadow: 0px 0px 4px 2px #b0e0e6; height: 76px; flex: 1; background: #011E33; color: #B0E0E6" class="ma-4 d-flex justify-space-between pr-2 pl-2 pt-1 pb-1">
@@ -227,8 +226,11 @@
                         </div>
                     </div>
                 </v-col> 
-            </v-row>    
+            </v-row>
             <v-card-actions class="d-flex flex-row justify-center">
+                <!-- <v-btn @click="createPng" variant="outlined">
+                    輸出卡表
+                </v-btn> -->
                 <v-btn
                 style="flex:1"
                 @click="editCardDialog = false"
@@ -237,14 +239,19 @@
             </v-card-actions>
         </v-card>
     </v-dialog>
+    <v-dialog>
+
+    </v-dialog>
 </template>
 <script>
 import { mapGetters } from "vuex";
+import domtoimage from 'dom-to-image';
+// import {google} from "googleapis";
 
 export default {
     data: () => {
         return {
-            cardVersion: "BP01",
+            cardVersion: "BP02",
             dialog: false,
             fileterDialog: false,
             editCardDialog: false,
@@ -274,6 +281,7 @@ export default {
             selectedConsumptions: [],
             tatolCardCount: 0,
             items: [
+                { title: 'BP02 - 黑銀的巴哈姆特', value: "BP02" },
                 { title: 'BP01 - 創世的黎明', value: "BP01" },
                 { title: 'SD01 - 妖精', value: "SD01" },
                 { title: 'SD02 - 皇家', value: "SD02" },
@@ -283,7 +291,8 @@ export default {
                 { title: 'SD06 - 主教', value: "SD06" }
             ],
             cardCode: null,
-            cardName: null
+            cardName: null,
+            testhtml: null
         }
     },
     methods: {
@@ -365,6 +374,29 @@ export default {
                 consumption.color = "selected"
                 this.selectedConsumptions.push(name)
             }
+        },
+        createPng() {
+            const cardList = document.getElementById('editCreateList');
+            let item = ""
+            for(const [key, card] of Object.entries(this.editCardList)) {
+                for(let i = 0; i<card.count; i++) {
+                    const temp = `<img :src="require(../assets/SV/創世的黎明/${card.code}.png)"/> `
+                    item += temp
+                }
+            }
+            console.log(cardList)
+            console.log(item)
+            // document.getElementById('test').appendChild(item);
+            this.testhtml = item
+            // domtoimage.toPng(item)
+            //     .then(function (dataUrl) {
+            //         var img = new Image();
+            //         img.src = dataUrl;
+            //         document.getElementById('test').appendChild(img);
+            //     })
+            //     .catch(function (error) {
+            //         // console.error('oops, something went wrong!', error);
+            //     });
         },
         async selectCardList() {
             this.offset = 0;
@@ -458,7 +490,14 @@ export default {
         this.professions = this.init().professions;
         this.levels = this.init().levels;
         this.consumptions = this.init().consumptions;
-        await this.$store.dispatch('initCardList', { offset: this.offset, limit: this.limit });
+        await this.$store.dispatch('initCardList', { version: this.cardVersion, offset: this.offset, limit: this.limit });
+        // console.log(google)
+        // this.$gapi.isSignedIn().then(result => {
+        //     console.log(result ? 'Signed in' : 'Signed out')
+        // })
+        // this.$gapi.login().then(({ currentUser, gapi, hasGrantedScopes }) => {
+        //     console.log({ currentUser, gapi, hasGrantedScopes })
+        // })
     }
 }
 </script>
@@ -537,6 +576,7 @@ export default {
     background: #011E33;
     color: #B0E0E6;
     font-weight: 900;
+    touch-action: manipulation;
     box-shadow: 0px 0px 4px 2px #b0e0e6 !important;
 }
 .view_list {

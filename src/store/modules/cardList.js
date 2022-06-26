@@ -32,7 +32,7 @@ const cardList = {
                     count: 0
                 }
             })
-            console.log(res)
+
             commit("INIT_CARD_LIST", res);
             return res;
         }
