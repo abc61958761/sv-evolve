@@ -2,7 +2,8 @@ import cardListAPI from "../../api/cardList";
 
 const cardList = {
     state: {
-        cardList: []
+        cardList: [],
+        editCardList: []
     },
     mutations: {
         UPDATE_CARD_LIST(state, payload) {

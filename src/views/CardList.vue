@@ -7,7 +7,6 @@
         <v-icon>mdi-cards-outline</v-icon>
         <span> {{tatolCardCount}}/50</span>
     </v-btn>
-    <!-- <div id="test" v-html="testhtml"></div> -->
     <v-row class="mb-4 align-center">
         <v-col cols="8" class="pa-2">
             <v-select 
@@ -228,9 +227,9 @@
                 </v-col> 
             </v-row>
             <v-card-actions class="d-flex flex-row justify-center">
-                <!-- <v-btn @click="createPng" variant="outlined">
+                <v-btn @click="createPng" variant="outlined" >
                     輸出卡表
-                </v-btn> -->
+                </v-btn>
                 <v-btn
                 style="flex:1"
                 @click="editCardDialog = false"
@@ -239,9 +238,16 @@
             </v-card-actions>
         </v-card>
     </v-dialog>
-    <v-dialog>
-
-    </v-dialog>
+    <v-card v-if="exportCardDialog" style="overflow: hidden" class="default_dialog">
+        <div id="exportImage" style="display: flex; z-index: -1; position: absolute; width: 4600px;">
+            <template v-for="card of editCardList" :key="card.id" >
+                <div style="margin-left: 2px" v-for="(item, index) of card.count" :key="index" >
+                    <img :src="require(`../assets/SV/創世的黎明/${card.code}.png`)" />
+                    <h2 style="color: black; font-size: 32px; text-align: center;">{{card.code}}</h2>
+                </div>
+            </template>
+        </div>
+    </v-card>
 </template>
 <script>
 import { mapGetters } from "vuex";
@@ -292,7 +298,8 @@ export default {
             ],
             cardCode: null,
             cardName: null,
-            testhtml: null
+            testhtml: null,
+            exportCardDialog: false
         }
     },
     methods: {
@@ -376,27 +383,32 @@ export default {
             }
         },
         createPng() {
-            const cardList = document.getElementById('editCreateList');
-            let item = ""
-            for(const [key, card] of Object.entries(this.editCardList)) {
-                for(let i = 0; i<card.count; i++) {
-                    const temp = `<img :src="require(../assets/SV/創世的黎明/${card.code}.png)"/> `
-                    item += temp
-                }
-            }
-            console.log(cardList)
-            console.log(item)
-            // document.getElementById('test').appendChild(item);
-            this.testhtml = item
-            // domtoimage.toPng(item)
-            //     .then(function (dataUrl) {
-            //         var img = new Image();
-            //         img.src = dataUrl;
-            //         document.getElementById('test').appendChild(img);
-            //     })
-            //     .catch(function (error) {
-            //         // console.error('oops, something went wrong!', error);
-            //     });
+            this.exportCardDialog = true;
+            setTimeout(this.downloadImage, 300)
+        },
+        downloadImage() {
+            const cardList = document.getElementById('exportImage');
+            domtoimage.toPng(cardList, {bgcolor: "#ffffff"})
+                .then(function (dataUrl) {
+                    // var img = new Image();
+                    // document.getElementById('test').appendChild(img);
+                    // img.src = dataUrl;
+                    // console.log(dataUrl)
+                    // const fileLink = document.createElement('a')
+                    // fileLink.href = dataUrl
+                    // fileLink.setAttribute('download', 'test.png')
+                    var link = document.createElement('a');
+                    link.download = 'sve-image.png';
+                    link.href = dataUrl;
+                    link.click();
+                })
+                .catch(function (error) {
+                    console.error('oops, something went wrong!', error);
+                })
+                .finally(() => {
+                    this.exportCardDialog = false
+                })
+                
         },
         async selectCardList() {
             this.offset = 0;
@@ -406,12 +418,11 @@ export default {
             this.fileterDialog = false;
         },
         async seletedCardVersion() {
-            console.log(this.cardVersion)
             this.offset = 0;
             await this.queryCardList("initCardList");
         },
         async queryCardList(type) {
-            await this.$store.dispatch(type, { 
+            await this.$store.dispatch(type, {
                 offset: this.offset, 
                 limit: this.limit,
                 consumptions: this.selectedConsumptions.toString(),
