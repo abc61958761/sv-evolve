@@ -264,8 +264,10 @@
 </template>
 <script>
 import { mapGetters } from "vuex";
-import domtoimage from 'dom-to-image';
+// import domtoimage from "dom-to-image-more";
+import html2canvas from "html2canvas";
 // import {google} from "googleapis";
+import canvasToImage from 'canvas-to-image';
 
 export default {
     data: () => {
@@ -397,30 +399,37 @@ export default {
         },
         createPng() {
             this.exportCardDialog = true;
-            setTimeout(this.downloadImage, 300)
+            setTimeout(this.downloadImage, 100)
         },
         downloadImage() {
             const cardList = document.getElementById('exportImage');
-            domtoimage.toPng(cardList, {bgcolor: "#ffffff"})
-                .then(function (dataUrl) {
-                    // var img = new Image();
-                    // document.getElementById('test').appendChild(img);
-                    // img.src = dataUrl;
-                    // console.log(dataUrl)
-                    // const fileLink = document.createElement('a')
-                    // fileLink.href = dataUrl
-                    // fileLink.setAttribute('download', 'test.png')
-                    var link = document.createElement('a');
-                    link.download = 'sve-image.png';
-                    link.href = dataUrl;
-                    link.click();
-                })
-                .catch(function (error) {
-                    console.error('oops, something went wrong!', error);
-                })
-                .finally(() => {
-                    this.exportCardDialog = false
-                })
+            // domtoimage.toPng(cardList, {bgcolor: "#ffffff"})
+            //     .then(function (dataUrl) {
+            //         // var img = new Image();
+            //         // document.getElementById('test').appendChild(img);
+            //         // img.src = dataUrl;
+            //         // console.log(dataUrl)
+            //         // const fileLink = document.createElement('a')
+            //         // fileLink.href = dataUrl
+            //         // fileLink.setAttribute('download', 'test.png')
+            //         var link = document.createElement('a');
+            //         link.download = 'sve-image.png';
+            //         link.href = dataUrl;
+            //         link.click();
+            //     })
+            //     .catch(function (error) {
+            //         console.error('oops, something went wrong!', error);
+            //     })
+            //     .finally(() => {
+            //         this.exportCardDialog = false
+            //     })
+            html2canvas(cardList).then(function(canvas) {
+                canvasToImage(canvas, {
+                    name: 'sve-image',
+                    type: 'png',
+                    // quality: 0.7
+                });
+            });
                 
         },
         async selectCardList() {
