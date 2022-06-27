@@ -93,14 +93,14 @@
             >
                 <v-icon>mdi-close</v-icon>
             </v-btn>
-            <div class="d-flex flex-column pa-4"  style="flex:1">
-                <div>
+            <div class="detail_card d-flex pa-4"  style="flex:1">
+                <div class="detail_card_left">
                     <v-img
                     class="detail_image card_image"
                     :src="require(`../assets/SV/創世的黎明/${cardDetail.code}.png`)"
                     ></v-img>
                 </div>
-                <div class="d-flex flex-column pt-2" style="flex:1">
+                <div class="detail_card_right d-flex flex-column pt-2" style="flex:1">
                     <div class="mb-2" style="text-align: center">名稱：{{cardDetail.chinese_name}}</div>
                     <div class="mb-2" style="text-align: center">類型：{{cardDetail.profession}}</div>
                     <div class="card_detail_describe mb-4" v-html="cardDetail.describe"></div>
@@ -239,15 +239,28 @@
         </v-card>
     </v-dialog>
     <v-card v-if="exportCardDialog" style="overflow: hidden" class="default_dialog">
-        <div id="exportImage" style="display: flex; z-index: -1; position: absolute; width: 4600px;">
+        <div id="exportImage" style="display: flex; z-index: -1; position: absolute; width: 5800px; flex-wrap: wrap; padding: 60px; min-height: 5000px; align-content: flex-start;">
             <template v-for="card of editCardList" :key="card.id" >
                 <div style="margin-left: 2px" v-for="(item, index) of card.count" :key="index" >
-                    <img :src="require(`../assets/SV/創世的黎明/${card.code}.png`)" />
-                    <h2 style="color: black; font-size: 32px; text-align: center;">{{card.code}}</h2>
+                    <img style="width: 550px;" :src="require(`../assets/SV/創世的黎明/${card.code}.png`)" />
+                    <h2 style="color: black; font-size: 60px; text-align: center;">{{card.code}}</h2>
                 </div>
             </template>
         </div>
     </v-card>
+
+    <!-- <v-dialog v-model="exportCardDialog">
+        <v-card class="default_dialog">
+            <div id="exportImage" style="display: flex; width: 6000px; flex-wrap: wrap; padding: 60px; min-height: 5000px; align-content: center;">
+                <template v-for="card of editCardList" :key="card.id" >
+                    <div style="margin-left: 2px" v-for="(item, index) of card.count" :key="index" >
+                        <img :src="require(`../assets/SV/創世的黎明/${card.code}.png`)" />
+                        <h2 style="color: black; font-size: 32px; text-align: center;">{{card.code}}</h2>
+                    </div>
+                </template>
+            </div>
+        </v-card>
+    </v-dialog> -->
 </template>
 <script>
 import { mapGetters } from "vuex";
@@ -614,12 +627,35 @@ export default {
     color: #FFFFFF;
     width: 100%
 }
+@media screen and (min-width: 601px) {
+    .detail_card {
+        flex-direction: row;
+
+        .detail_card_left {
+            display: flex;
+            width: 50%;
+            align-items: center;
+        }
+        .detail_card_right {
+            justify-content: center;
+        }
+        .card_detail_describe {
+            max-height: 300px;
+            font-size: 14px;
+        }
+    }
+}
 
 @media screen and (max-width: 600px) {
     .card_image {
         border-radius: 8px;
     }
+    .detail_card {
+        flex-direction: column;
+    }
 }
+
+
 </style>
 <style lang="scss">
 .v-input.card_version_select > .v-input__control .v-field {
