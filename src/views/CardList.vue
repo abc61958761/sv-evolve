@@ -243,7 +243,7 @@
     </v-dialog>
     <v-card v-if="exportCardDialog && downloadType=='download_pdf'" style="overflow: hidden" class="default_dialog">
         <div id="exportPDF" :class="downloadType">
-            <div v-for="(card, index) of pdfCardList" :key="index" :class="{ testClass: (index+1)%9 == 0 }">
+            <div v-for="(card, index) of pdfCardList" :key="index" :class="[{ pdfMarginBottom: (index+1)%9 == 0 }, {pdfMarginTop: ((index+1)%9 == 1) || ((index+1)%9 == 2) || ((index+1)%9 == 3)}]">
                 <img :src="require(`../assets/SV/創世的黎明/${card.code}.png`)"  />
             </div>
         </div>
@@ -429,14 +429,14 @@ export default {
         createPDF() {
             this.exportCardDialog = true;
             this.downloadType = 'download_pdf'
-
+            this.pdfCardList = []
             for(const [key,value] of Object.entries(this.editCardList)) {
                 for(let i = 0; i<value.count; i++) {
                     this.pdfCardList.push(value)
                 }
             }
             setTimeout(this.downloadPDF, 100)
-            this.pdfCardList = []
+            
         },
         downloadPDF() {
             const cardList = document.getElementById('exportPDF');
@@ -457,10 +457,10 @@ export default {
                 //addImage後兩個引數控制新增圖片的尺寸，此處將頁面高度按照a4紙寬高比列進行壓縮
 
                 if (leftHeight < pageHeight) {
-                    pdf.addImage(pageData, 'JPEG', 0, 0, imgWidth, imgHeight  );
+                    pdf.addImage(pageData, 'JPEG', 20, 0, imgWidth, imgHeight  );
                 } else {
                     while(leftHeight > 0) {
-                        pdf.addImage(pageData, 'JPEG', 0, position, imgWidth, imgHeight )
+                        pdf.addImage(pageData, 'JPEG', 20, position, imgWidth, imgHeight )
                         leftHeight -= pageHeight;
                         position -= 841.89;
                         //避免新增空白頁
@@ -576,8 +576,11 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
-.testClass {
-    margin-bottom: 97.9pt;
+.pdfMarginBottom {
+    margin-bottom: 77.9pt;
+}
+.pdfMarginTop {
+    margin-top: 20pt;
 }
 .filter_btn {
     position: fixed;
