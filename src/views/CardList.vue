@@ -429,15 +429,14 @@ export default {
         createPDF() {
             this.exportCardDialog = true;
             this.downloadType = 'download_pdf'
-            console.log(this.editCardList)
+
             for(const [key,value] of Object.entries(this.editCardList)) {
-                console.log(value.count)
                 for(let i = 0; i<value.count; i++) {
                     this.pdfCardList.push(value)
                 }
             }
-            console.log(this.pdfCardList)
             setTimeout(this.downloadPDF, 100)
+            this.pdfCardList = []
         },
         downloadPDF() {
             const cardList = document.getElementById('exportPDF');
