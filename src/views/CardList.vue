@@ -230,7 +230,7 @@
                 <v-btn v-if="!$vuetify.display.mobile" @click="createPng" variant="outlined" >
                     輸出圖片
                 </v-btn>
-                <v-btn v-if="!$vuetify.display.mobile" @click="createPDF" variant="outlined" >
+                <v-btn @click="createPDF" variant="outlined" >
                     輸出 PDF
                 </v-btn>
                 <v-btn
