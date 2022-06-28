@@ -227,8 +227,11 @@
                 </v-col> 
             </v-row>
             <v-card-actions class="d-flex flex-row justify-center">
-                <v-btn @click="createPng" variant="outlined" >
-                    輸出卡表
+                <v-btn v-if="!$vuetify.display.mobile" @click="createPng" variant="outlined" >
+                    輸出圖片
+                </v-btn>
+                <v-btn v-if="!$vuetify.display.mobile" @click="createPDF" variant="outlined" >
+                    輸出 PDF
                 </v-btn>
                 <v-btn
                 style="flex:1"
@@ -238,12 +241,20 @@
             </v-card-actions>
         </v-card>
     </v-dialog>
-    <v-card v-if="exportCardDialog" style="overflow: hidden" class="default_dialog">
-        <div id="exportImage" style="display: flex; z-index: -1; position: absolute; width: 5800px; flex-wrap: wrap; padding: 60px; min-height: 5000px; align-content: flex-start;">
-            <template v-for="card of editCardList" :key="card.id" >
-                <div style="margin-left: 2px" v-for="(item, index) of card.count" :key="index" >
-                    <img style="width: 550px;" :src="require(`../assets/SV/創世的黎明/${card.code}.png`)" />
-                    <h2 style="color: black; font-size: 60px; text-align: center;">{{card.code}}</h2>
+    <v-card v-if="exportCardDialog && downloadType=='download_pdf'" style="overflow: hidden" class="default_dialog">
+        <div id="exportPDF" :class="downloadType">
+            <div v-for="(card, index) of pdfCardList" :key="index" :class="{ testClass: (index+1)%9 == 0 }">
+                <img :src="require(`../assets/SV/創世的黎明/${card.code}.png`)"  />
+            </div>
+        </div>
+    </v-card>
+
+    <v-card v-if="exportCardDialog && downloadType=='download_image'" style="overflow: hidden" class="default_dialog">
+        <div id="exportImage" :class="downloadType">
+            <template v-for="(card) of editCardList" :key="card.id" >
+                <div v-for="(item, index) of card.count" :key="index" >
+                    <img :src="require(`../assets/SV/創世的黎明/${card.code}.png`)" />
+                    <h2 v-if="downloadType == 'download_image'" style="color: black; font-size: 60px; text-align: center;">{{card.code}}</h2>
                 </div>
             </template>
         </div>
@@ -251,11 +262,11 @@
 
     <!-- <v-dialog v-model="exportCardDialog">
         <v-card class="default_dialog">
-            <div id="exportImage" style="display: flex; width: 6000px; flex-wrap: wrap; padding: 60px; min-height: 5000px; align-content: center;">
-                <template v-for="card of editCardList" :key="card.id" >
-                    <div style="margin-left: 2px" v-for="(item, index) of card.count" :key="index" >
+            <div id="exportImage" :class="downloadType">
+                <template v-for="(card, key, cardIndex) of editCardList" :key="card.id" >
+                    <div v-for="(item, index) of card.count" :key="index" :class="{ testClass: ((((cardIndex+1)* index)%8 == 0) && cardIndex+index>0)}">
                         <img :src="require(`../assets/SV/創世的黎明/${card.code}.png`)" />
-                        <h2 style="color: black; font-size: 32px; text-align: center;">{{card.code}}</h2>
+                        <h2 v-if="downloadType == 'download_image'" style="color: black; font-size: 60px; text-align: center;">{{card.code}}</h2>
                     </div>
                 </template>
             </div>
@@ -268,6 +279,7 @@ import { mapGetters } from "vuex";
 import html2canvas from "html2canvas";
 // import {google} from "googleapis";
 import canvasToImage from 'canvas-to-image';
+import { jsPDF } from "jspdf";
 
 export default {
     data: () => {
@@ -314,7 +326,9 @@ export default {
             cardCode: null,
             cardName: null,
             testhtml: null,
-            exportCardDialog: false
+            exportCardDialog: false,
+            downloadType: null,
+            pdfCardList: []
         }
     },
     methods: {
@@ -399,38 +413,66 @@ export default {
         },
         createPng() {
             this.exportCardDialog = true;
+            this.downloadType = 'download_image'
             setTimeout(this.downloadImage, 100)
         },
         downloadImage() {
             const cardList = document.getElementById('exportImage');
-            // domtoimage.toPng(cardList, {bgcolor: "#ffffff"})
-            //     .then(function (dataUrl) {
-            //         // var img = new Image();
-            //         // document.getElementById('test').appendChild(img);
-            //         // img.src = dataUrl;
-            //         // console.log(dataUrl)
-            //         // const fileLink = document.createElement('a')
-            //         // fileLink.href = dataUrl
-            //         // fileLink.setAttribute('download', 'test.png')
-            //         var link = document.createElement('a');
-            //         link.download = 'sve-image.png';
-            //         link.href = dataUrl;
-            //         link.click();
-            //     })
-            //     .catch(function (error) {
-            //         console.error('oops, something went wrong!', error);
-            //     })
-            //     .finally(() => {
-            //         this.exportCardDialog = false
-            //     })
             html2canvas(cardList).then(function(canvas) {
                 canvasToImage(canvas, {
-                    name: 'sve-image',
+                    name: 'sve-dingdong-dingdong',
                     type: 'png',
                     // quality: 0.7
                 });
             });
-                
+        },
+        createPDF() {
+            this.exportCardDialog = true;
+            this.downloadType = 'download_pdf'
+            console.log(this.editCardList)
+            for(const [key,value] of Object.entries(this.editCardList)) {
+                console.log(value.count)
+                for(let i = 0; i<value.count; i++) {
+                    this.pdfCardList.push(value)
+                }
+            }
+            console.log(this.pdfCardList)
+            setTimeout(this.downloadPDF, 100)
+        },
+        downloadPDF() {
+            const cardList = document.getElementById('exportPDF');
+
+            html2canvas(cardList).then(function(canvas) {
+                var contentWidth = canvas.width;
+                var contentHeight = canvas.height;
+
+                var pageHeight = contentWidth / 592.28 * 841.89;
+                var leftHeight = contentHeight;
+
+                var imgWidth = 595.28;
+                var imgHeight = 592.28/contentWidth * contentHeight;
+                let position = 0;
+                const pageData = canvas.toDataURL('image/jpeg', 1.0);
+                //方向預設豎直，尺寸ponits，格式a4[595.28,841.89]
+                const pdf = new jsPDF('', 'pt', 'a4');
+                //addImage後兩個引數控制新增圖片的尺寸，此處將頁面高度按照a4紙寬高比列進行壓縮
+
+                if (leftHeight < pageHeight) {
+                    pdf.addImage(pageData, 'JPEG', 0, 0, imgWidth, imgHeight  );
+                } else {
+                    while(leftHeight > 0) {
+                        pdf.addImage(pageData, 'JPEG', 0, position, imgWidth, imgHeight )
+                        leftHeight -= pageHeight;
+                        position -= 841.89;
+                        //避免新增空白頁
+                        if(leftHeight > 0) {
+                            pdf.addPage();
+                        }
+                    }
+                }
+
+                pdf.save('sve-dingdong-dingdong.pdf');
+            });
         },
         async selectCardList() {
             this.offset = 0;
@@ -535,6 +577,9 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
+.testClass {
+    margin-bottom: 97.9pt;
+}
 .filter_btn {
     position: fixed;
     z-index: 5;
@@ -587,13 +632,6 @@ export default {
     color: #B0E0E6;
 
 }
-// .text-body-2 {
-//     font-size: 0.875rem!important;
-//     font-family: Roboto,sans-serif!important;
-//     font-weight: 400;
-//     line-height: 1.25rem;
-//     letter-spacing: 0.0178571429em!important;
-// }
 .chip {
     background: #011E33;
     color: #B0E0E6;
@@ -635,6 +673,38 @@ export default {
     border-radius: 4px;
     color: #FFFFFF;
     width: 100%
+}
+.download_image{
+    display: flex; 
+    z-index: -1; 
+    position: absolute; 
+    width: 5800px; 
+    flex-wrap: wrap; 
+    padding: 60px; 
+    min-height: 5000px; 
+    align-content: flex-start;
+    > div {
+        margin-left: 2px;
+    }
+    img {
+        width: 550px;
+    }
+}
+.download_pdf {
+    display: flex; 
+    // z-index: -1; 
+    // position: absolute;
+    flex-wrap: wrap; 
+    align-content: flex-start;
+    width: 595.28pt;
+    // height: 297mm;
+    > div {
+        height: 249.4488189pt;
+    }
+    img {
+        width: 63mm;
+        height: 249.4488189pt;
+    }
 }
 @media screen and (min-width: 601px) {
     .detail_card {
