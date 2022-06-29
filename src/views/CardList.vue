@@ -5,7 +5,7 @@
         @click="openEditCardDialog"
     >
         <v-icon>mdi-cards-outline</v-icon>
-        <span> {{tatolCardCount}}/50</span>
+        <span> {{evolveCount+unevolvedCount}}/50</span>
     </v-btn>
     <v-row class="mb-4 align-center">
         <v-col cols="8" class="pa-2">
@@ -182,7 +182,7 @@
                     </v-card>
                 </v-row>
                 <v-row class="ma-0 justify-space-between pr-4 pl-4 align-center">
-                    <div style="color: #B0E0E6">卡排列表 {{tatolCardCount}} / 50</div>
+                    <div style="color: #B0E0E6"><span class="mr-10"><span style="font-weight: bold;">卡排列表</span> {{unevolvedCount}} / 40</span> <span style="font-weight: bold;">EVOLVE</span> <span>{{evolveCount}} / 10</span></div>
                     <div>
                         <v-btn @click="viewType = 'dashboard'" icon size="x-small" class="mr-1" elevation="0" style="background: #011E33; color: #B0E0E6;">
                             <v-icon>mdi-view-dashboard</v-icon>
@@ -193,8 +193,40 @@
                     </div>
                 </v-row>
             </div>
-            <v-row class="ma-0" style="overflow: auto;" :class="[viewType == 'dashboard' ? '' : 'view_list']">
-                <v-col v-for="(card) in editCardList" :key="card.id" sm="4" md="3" :cols="cols" class="pb-0">
+            <v-row class="ma-0 pb-1" style="overflow: auto;" :class="[viewType == 'dashboard' ? '' : 'view_list']">
+                <v-col v-for="(card) in editCardList.unevolved" :key="card.id" sm="4" md="3" :cols="cols" class="pb-0">
+                    <div style="background: #011E33; color: #B0E0E6" elevation="0" :class="testClass">
+                        <v-img
+                        v-if="viewType == 'dashboard'" 
+                        :src="require(`../assets/SV/創世的黎明/${card.code}.png`)"
+                        class="mb-2 card_image"
+                        ></v-img>
+                        <div>
+                            <div class="mb-2" :class="`text-${model}`" style="font-weight: 600" v-text="card.name"></div>
+                            <div v-if="viewType == 'list'"  class="mb-2" :class="`text-${model}`" style="font-weight: 600" >
+                                <span v-text="card.code"></span>
+                                <span class="ml-4">{{card.chinese_name}}</span>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-space-around align-center card_btn">
+                            <v-btn
+                                icon="mdi-plus"
+                                size="x-small"
+                                class="count_btn"
+                                @click="addCard(card)"
+                            ></v-btn>
+                            {{card.count}}
+                            <v-btn
+                                icon="mdi-minus"
+                                size="x-small"
+                                class="count_btn"
+                                @click="reduceCard(card)"
+                            ></v-btn>
+                        </div>
+                    </div>
+                </v-col> 
+                
+                <v-col v-for="(card) in editCardList.evolve" :key="card.id" sm="4" md="3" :cols="cols" class="pb-0">
                     <div style="background: #011E33; color: #B0E0E6" elevation="0" :class="testClass">
                         <v-img
                         v-if="viewType == 'dashboard'" 
@@ -251,26 +283,50 @@
 
     <v-card v-if="exportCardDialog && downloadType=='download_image'" style="overflow: hidden" class="default_dialog">
         <div id="exportImage" :class="downloadType">
-            <template v-for="(card) of editCardList" :key="card.id" >
-                <div v-for="(item, index) of card.count" :key="index" >
-                    <img :src="require(`../assets/SV/創世的黎明/${card.code}.png`)" />
-                    <h2 v-if="downloadType == 'download_image'" style="color: black; font-size: 60px; text-align: center;">{{card.code}}</h2>
-                </div>
-            </template>
-        </div>
-    </v-card>
-
-    <!-- <v-dialog v-model="exportCardDialog">
-        <v-card class="default_dialog">
-            <div id="exportImage" :class="downloadType">
-                <template v-for="(card, key, cardIndex) of editCardList" :key="card.id" >
-                    <div v-for="(item, index) of card.count" :key="index" :class="{ testClass: ((((cardIndex+1)* index)%8 == 0) && cardIndex+index>0)}">
+            <div class="d-flex flex-wrap">
+                <template v-for="(card) of editCardList.unevolved" :key="card.id">
+                    <div v-for="(item, index) of card.count" :key="index">
                         <img :src="require(`../assets/SV/創世的黎明/${card.code}.png`)" />
                         <h2 v-if="downloadType == 'download_image'" style="color: black; font-size: 60px; text-align: center;">{{card.code}}</h2>
                     </div>
                 </template>
             </div>
-        </v-card>
+
+            <div style="color: black; font-size: 100px;">進化牌組</div>
+            <div class="d-flex flex-wrap">
+                <template v-for="(card) of editCardList.evolve" :key="card.id">
+                    <div v-for="(item, index) of card.count" :key="index">
+                        <img :src="require(`../assets/SV/創世的黎明/${card.code}.png`)" />
+                        <h2 v-if="downloadType == 'download_image'" style="color: black; font-size: 60px; text-align: center;">{{card.code}}</h2>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </v-card>
+
+    <!-- <v-dialog v-model="exportCardDialog">
+            <v-card v-if="exportCardDialog && downloadType=='download_image'" class="default_dialog">
+                <div id="exportImage" :class="downloadType">
+                    <div class="d-flex flex-wrap">
+                        <template v-for="(card) of editCardList.unevolved" :key="card.id" class="d-flex">
+                            <div v-for="(item, index) of card.count" :key="index" >
+                                <img :src="require(`../assets/SV/創世的黎明/${card.code}.png`)" />
+                                <h2 v-if="downloadType == 'download_image'" style="color: black; font-size: 60px; text-align: center;">{{card.code}}</h2>
+                            </div>
+                        </template>
+                    </div>
+
+                    <div>進化牌組</div>
+                    <div class="d-flex flex-wrap">
+                        <template v-for="(card) of editCardList.evolve" :key="card.id" class="d-flex">
+                            <div v-for="(item, index) of card.count" :key="index" >
+                                <img :src="require(`../assets/SV/創世的黎明/${card.code}.png`)" />
+                                <h2 v-if="downloadType == 'download_image'" style="color: black; font-size: 60px; text-align: center;">{{card.code}}</h2>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </v-card>
     </v-dialog> -->
 </template>
 <script>
@@ -299,20 +355,12 @@ export default {
             professions: null,
             levels: null,
             consumptions: null,
-            editCardList: {},
             viewType: "dashboard",
             cols: 6,
             testClass: [],
-            editBarChart: {
-                "follower": 0,
-                "spell": 0,
-                "amulet": 0,
-                countList: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-            },
             selectedProfessions: [],
             selectedLevels: [],
             selectedConsumptions: [],
-            tatolCardCount: 0,
             items: [
                 { title: 'BP02 - 黑銀的巴哈姆特', value: "BP02" },
                 { title: 'BP01 - 創世的黎明', value: "BP01" },
@@ -344,33 +392,36 @@ export default {
         },
         addCard(card) {
             card.count ++;
-            this.tatolCardCount ++;
-            this.editCardList[card.code] = card;
-            this.editBarChart[card.type] ++;
+            if (card.consumption === 'EVOLVE') {
+                this.$store.dispatch('addEvolveCount');
+                this.$store.dispatch('addEvolveCard', card);
 
-            const consumption = parseInt(card.consumption);
-            
-            if (isNaN(consumption)) {
-                this.editBarChart.countList[11] ++;
-            }
-            else if (consumption >= 10) {
-                this.editBarChart.countList[10] ++;
             } else {
-                this.editBarChart.countList[consumption] ++;
+                this.$store.dispatch('addUnevolvedCount');
+                this.$store.dispatch('addUnEvolvedCard', card);
             }
             
+            this.$store.dispatch('addEditBarChart', card);
         },
         reduceCard(card) {
             if (card.count > 0) { 
                 card.count --;
-                this.tatolCardCount --;
-                this.editCardList[card.code] = card;
-                this.editBarChart[card.type] --;
-                const consumption = parseInt(card.consumption);
-                this.editBarChart.countList[consumption] --;
+                if (card.consumption === 'EVOLVE') {
+                    this.$store.dispatch('addEvolveCard', card);
+                    this.$store.dispatch('reduceEvolveCount');
+                } else {
+                    this.$store.dispatch('addUnEvolvedCard', card);
+                    this.$store.dispatch('reduceUnevolvedCount');
+                }
+
+                this.$store.dispatch('reduceEditBarChart', card);
             } 
             if (card.count == 0) {
-                delete this.editCardList[card.code];
+                if (card.consumption === 'E') {
+                    this.$store.dispatch('removeEvolveCard', card);
+                } else {
+                    this.$store.dispatch('removeUnEvolvedCard', card);
+                }
             }
         },
         async onIntersect (entries, observer) {
@@ -430,7 +481,12 @@ export default {
             this.exportCardDialog = true;
             this.downloadType = 'download_pdf'
             this.pdfCardList = []
-            for(const [key,value] of Object.entries(this.editCardList)) {
+            for(const [key,value] of Object.entries(this.editCardList.unevolved)) {
+                for(let i = 0; i<value.count; i++) {
+                    this.pdfCardList.push(value)
+                }
+            }
+            for(const [key,value] of Object.entries(this.editCardList.evolve)) {
                 for(let i = 0; i<value.count; i++) {
                     this.pdfCardList.push(value)
                 }
@@ -551,7 +607,11 @@ export default {
     },
     computed: {
       ...mapGetters({
-        cardList: "getCardList"
+        cardList: "getCardList",
+        editCardList: "getEditCardList",
+        evolveCount: "getEvolveCount",
+        unevolvedCount: "getUnevolvedCount",
+        editBarChart: "getEditBarChart"
       }),
       model() {
         if(this.$vuetify.display.mobile) {
@@ -678,13 +738,14 @@ export default {
 }
 .download_image{
     display: flex; 
-    z-index: -1; 
-    position: absolute; 
+    // z-index: -1; 
+    // position: absolute; 
     width: 5800px; 
     flex-wrap: wrap; 
     padding: 60px; 
     min-height: 5000px; 
     align-content: flex-start;
+    flex-direction: column;
     > div {
         margin-left: 2px;
     }
@@ -694,12 +755,11 @@ export default {
 }
 .download_pdf {
     display: flex; 
-    // z-index: -1; 
-    // position: absolute;
+    z-index: -1; 
+    position: absolute;
     flex-wrap: wrap; 
     align-content: flex-start;
     width: 595.28pt;
-    // height: 297mm;
     > div {
         height: 249.4488189pt;
     }

@@ -34,7 +34,6 @@ export default {
     //
   }),
   created() {
-    console.log(this.$router.currentRoute._value.path)
   },
   methods: {
     goPage(param) {
