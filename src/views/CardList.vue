@@ -739,7 +739,8 @@ export default {
 .download_image{
     display: flex; 
     // z-index: -1; 
-    // position: absolute; 
+    // position: absolute;
+    transform: scale(0.2);
     width: 5800px; 
     flex-wrap: wrap; 
     padding: 60px; 
