@@ -259,7 +259,7 @@
                 </v-col> 
             </v-row>
             <v-card-actions class="d-flex flex-row justify-center">
-                <v-btn v-if="!$vuetify.display.mobile" @click="createPng" variant="outlined" >
+                <v-btn @click="createPng" variant="outlined" >
                     輸出圖片
                 </v-btn>
                 <v-btn @click="createPDF" variant="outlined" >
