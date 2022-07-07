@@ -4,7 +4,14 @@
     </v-app-bar> -->
     <v-main style="background: #011E33">
       <v-container class="grey lighten-5">
-        <router-view />
+        <!-- <keep-alive>
+          <router-view />
+        </keep-alive> -->
+        <router-view v-slot="{ Component }">
+          <keep-alive>
+            <component :is="Component" />
+          </keep-alive>
+        </router-view>
       </v-container>
     </v-main>
     <v-bottom-navigation class="footer_bar"
@@ -37,6 +44,9 @@ export default {
   },
   methods: {
     goPage(param) {
+      if (this.$route.path === '/card-list') {
+        this.$store.dispatch("setCardPagePositionY", window.scrollY);
+      }
       this.$router.push(`/${param}`)
     }
   }

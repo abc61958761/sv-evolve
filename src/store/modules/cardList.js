@@ -14,7 +14,8 @@ const cardList = {
             "spell": 0,
             "amulet": 0,
             countList: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        }
+        },
+        cardPagePositionY: 0
     },
     mutations: {
         UPDATE_CARD_LIST(state, payload) {
@@ -54,6 +55,9 @@ const cardList = {
         REDUCE_EDIT_BAR_CHART(state, payload) {
             state.editBarChart.countList[payload.listIndex] --
             state.editBarChart[payload.type] --
+        },
+        SET_POSITION_Y(state, payload) {
+            state.cardPagePositionY = payload
         }
     },
     actions: {
@@ -157,6 +161,9 @@ const cardList = {
             commit("REDUCE_EDIT_BAR_CHART", {
                 listIndex, type: card.type
             })
+        },
+        setCardPagePositionY({ commit }, positionY) {
+            commit("SET_POSITION_Y", positionY)
         }
     },
     getters: {
@@ -174,6 +181,9 @@ const cardList = {
         },
         getEditBarChart(state) {
             return state.editBarChart;
+        },
+        getCardPagePositionY(state) {
+            return state.cardPagePositionY;
         }
     }
 }
